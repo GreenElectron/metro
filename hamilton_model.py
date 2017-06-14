@@ -1,8 +1,3 @@
-
-DT = 1./60.
-GX = 0.
-GY = -10. #9.81
-        
 class Particle():
     def __init__(self, tags):
         self.tags = tags
@@ -12,7 +7,7 @@ class Free(): # as in the free (analytically solveable) Hamiltonian
         self.tags = tags
         self.function = function        # propagator
         
-    def check(self, part): # return True if a particle is tagged to this prop. 
+    def check(self, part): # return True if a particle is tagged to this prop.
         for t in part.tags:
             if (t in self.tags):
                 return True
@@ -63,9 +58,13 @@ class Collect():
     def prop_collect(self, particle):
         return self.collector(particle)
 
+def printandreturn(stuff):
+    print stuff
+    return stuff
+
 class Hamilton():
     def __init__(self, free, int, coll):
-        self.free = free                # 
+        self.free = free
         self.int  = int
         self.coll = coll
     
@@ -78,54 +77,31 @@ class Hamilton():
     # Takes a list of particles, parts, and one (free) propogator prop, applies
     # prop to the relevant parts returns updated list of parts.
     def run1_free(self, parts, prop):
-        return (parts and (prop.check(parts[0]) and [prop.prop_free(parts[0])])
-        + self.run1_free(parts[1:], prop))
+        return (parts and
+                (prop.check(parts[0]) and [prop.prop_free(parts[0])] or parts[0:1])
+                 + self.run1_free(parts[1:], prop))
     
     # Takes a list of particles, parts, and a list of (free) propogators, props,
     # by default the free propogators already assigned to this Hamiltonian and
     # runs each propogator on parts then returns the updated list of parts.
-    def run_free(self, parts, props = "wrong"):
-        if props == "wrong":
+    def run_free(self, parts, props = None):
+        if props == None:
             props = self.free
         return (props and self.run_free(self.run1_free(parts, props[0]),props[1:])
-        or parts)
+                or parts)
     
     # Takes a list of particles, parts, and a single (collect) propogator, col0,
     # by default the first collect propogator alreadz assigned to this Hamilton-
     # ian and returns a list of the outputs of col0.
-    def run1_coll(self, parts, col0 = "wrong"):
-        if col0 == "wrong":
+    def run1_coll(self, parts, col0 = None):
+        if col0 == None:
             col0 = self.get_coll(0)
-        return (parts and (col0.check(parts[0]) and [col0.prop_collect(parts[0])])
-        + self.run1_coll(parts[1:], col0))
+        return (parts and
+                (col0.check(parts[0]) and [col0.prop_collect(parts[0])])
+                 + self.run1_coll(parts[1:], col0))
 
 def id(particle):
     return particle
 
 def trivial(left, right):
     return True
-
-def n(particle):
-    particle.x += particle.u * DT
-    particle.y += particle.v * DT
-    return particle    
-
-def g(particle):                  # move a particle (also accelerate it under g)
-    particle.u += GX * DT
-    particle.v += GY * DT
-    particle.x += particle.u * DT
-    particle.y += particle.v * DT
-    return particle
-
-def drawlist(particle):
-    particle.pl = [[particle.x, particle.y], particle.pb]
-    return particle.pl
-
-
-freefall = Free(['freefall'], g)
-drawlist = Collect(['drawable'], drawlist)
-
-
-        
-    
-        
