@@ -40,7 +40,7 @@ class PaintIns:          # Painting Instructions
 
 
 class PaintBox(PaintIns):
-    def __init__(self, canvas, colour='white', width=10, height=10):    # color is an integer - index of the color-list
+    def __init__(self, canvas, width=10, height=10, colour='white'):    # color is an integer - index of the color-list
         PaintIns.__init__(self, canvas)
         self.width = width
         self.height = height
